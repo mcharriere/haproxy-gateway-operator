@@ -3,4 +3,14 @@ layout:
 - go.kubebuilder.io/v3
 projectName: haproxy-operator
 repo: github.com/mcharriere/giantswarm-task
+resources:
+- api:
+    crdVersion: v1
+    namespaced: true
+  controller: true
+  domain: my.domain
+  group: haproxy-opeartor
+  kind: Route
+  path: github.com/mcharriere/giantswarm-task/api/v1alpha1
+  version: v1alpha1
 version: "3"
