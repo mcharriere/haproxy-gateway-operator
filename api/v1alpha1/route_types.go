@@ -25,21 +25,17 @@ import (
 
 // RouteSpec defines the desired state of Route
 type RouteSpec struct {
-	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
-
-	// Foo is an example field of Route. Edit route_types.go to remove/update
-	Foo string `json:"foo,omitempty"`
+	Host    string `json:"host,omitempty"`
+	Backend string `json:"backend,omitempty"`
 }
 
 // RouteStatus defines the observed state of Route
 type RouteStatus struct {
-	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
 }
 
 //+kubebuilder:object:root=true
 //+kubebuilder:subresource:status
+//+kubebuilder:printcolumn:JSONPath=".spec.host",name="Host",type="string"
 
 // Route is the Schema for the routes API
 type Route struct {

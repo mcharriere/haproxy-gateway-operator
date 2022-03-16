@@ -3,4 +3,5 @@ kind: Route
 metadata:
   name: route-sample
 spec:
-  # TODO(user): Add fields here
+  host: test.com
+  backend: some-backend
