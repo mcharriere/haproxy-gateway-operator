@@ -37,7 +37,7 @@ type RouteReconciler struct {
 //+kubebuilder:rbac:groups=haproxy-opeartor.my.domain,resources=routes/finalizers,verbs=update
 
 func (r *RouteReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-	log := r.Log.WithValues("route", req.NamespacedName)
+	log := ctrl.LoggerFrom(ctx)
 
 	log.Info("reconciling route")
 
