@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  labels:
+    app: haproxy-operator
+  name: haproxy-operator
+  namespace: kube-system
+spec:
+  selector:
+    matchLabels:
+      app: haproxy-operator
+  template:
+    metadata:
+      labels:
+        app: haproxy-operator
+    spec:
+      containers:
+      - name: haproxy-operator
+        image: haproxytech/haproxy-alpine:2.5
+        resources:
+          requests:
+            cpu: "1"
+            memory: "500Mi"
+        ports:
+        - name: http
+          containerPort: 80
+          hostPort: 8080
+        - name: dataplane
+          containerPort: 5555
+          hostPort: 5555
+        - name: stats
+          containerPort: 9500
+          hostPort: 9500
