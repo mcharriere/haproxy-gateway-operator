@@ -1,0 +1,6 @@
+apiVersion: haproxy-opeartor.my.domain/v1alpha1
+kind: HaproxyConfig
+metadata:
+  name: haproxyconfig-sample
+spec:
+  # TODO(user): Add fields here
