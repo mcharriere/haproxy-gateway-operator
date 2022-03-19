@@ -3,5 +3,25 @@ kind: Route
 metadata:
   name: route-sample
 spec:
-  host: test.com
+  host: ztest.com
   backend: some-backend
+
+---
+
+apiVersion: haproxy-opeartor.my.domain/v1alpha1
+kind: Route
+metadata:
+  name: route-sample-2
+spec:
+  host: btest.alt
+  backend: another-backend
+
+---
+
+apiVersion: haproxy-opeartor.my.domain/v1alpha1
+kind: Route
+metadata:
+  name: route-sample-1
+spec:
+  host: testing.com
+  backend: another-backend

@@ -17,7 +17,6 @@ limitations under the License.
 package v1alpha1
 
 import (
-	hapcli "github.com/mcharriere/giantswarm-task/pkg/haproxy_dataplane"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -27,7 +26,29 @@ type HaproxyConfigSpec struct {
 	Version int `json:"version,omitempty"`
 
 	// Config data
-	Data hapcli.HaproxyConfigData `json:"data,omitempty"`
+	Data HaproxyConfigData `json:"data,omitempty"`
+}
+
+type HaproxyConfigData struct {
+	Backends  []HaproxyConfigBackend  `json:"backends"`
+	Frontends []HaproxyConfigFrontend `json:"frontends"`
+}
+
+type HaproxyConfigBackend struct {
+	Name    string                `json:"name"`
+	Servers []HaproxyConfigServer `json:"servers"`
+}
+
+type HaproxyConfigServer struct {
+	Name    string `json:"name"`
+	Port    int    `json:"port"`
+	Address string `json:"address,omitempty"`
+}
+
+type HaproxyConfigFrontend struct {
+	Name    string `json:"name"`
+	Backend string `json:"backend"`
+	Host    string `json:"host"`
 }
 
 // HaproxyConfigStatus defines the observed state of HaproxyConfig

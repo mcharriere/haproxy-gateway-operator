@@ -3,4 +3,18 @@ kind: HaproxyConfig
 metadata:
   name: haproxyconfig-sample
 spec:
-  # TODO(user): Add fields here
+  version: 1
+  data: 
+    frontends:
+    - name: frontend2
+      backend: pepe
+      host: pepe.com
+    backends:
+    - name: pepe
+      servers:
+      - name: pepe1
+        port: 8080
+        address: 10.0.0.1
+      - name: pepe2
+        port: 8080
+        address: 10.0.0.2

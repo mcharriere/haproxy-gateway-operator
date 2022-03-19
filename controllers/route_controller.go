@@ -18,12 +18,14 @@ package controllers
 
 import (
 	"context"
+	"fmt"
 
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	logger "sigs.k8s.io/controller-runtime/pkg/log"
 
-	haproxyopeartorv1alpha1 "github.com/mcharriere/giantswarm-task/api/v1alpha1"
+	ho "github.com/mcharriere/giantswarm-task/api/v1alpha1"
 )
 
 // RouteReconciler reconciles a Route object
@@ -37,15 +39,48 @@ type RouteReconciler struct {
 //+kubebuilder:rbac:groups=haproxy-opeartor.my.domain,resources=routes/finalizers,verbs=update
 
 func (r *RouteReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-	log := ctrl.LoggerFrom(ctx)
+	log := logger.FromContext(ctx)
 
 	log.Info("reconciling route")
 
-	var route haproxyopeartorv1alpha1.Route
-	if err := r.Get(ctx, req.NamespacedName, &route); err != nil {
-		log.Error(err, "unable to fetch route")
+	haproxyConfigName := client.ObjectKey{Name: "haproxyconfig-sample", Namespace: req.Namespace}
+	var haproxyConfig ho.HaproxyConfig
+	if err := r.Get(ctx, haproxyConfigName, &haproxyConfig); err != nil {
 		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
+
+	var route ho.Route
+	if err := r.Get(ctx, req.NamespacedName, &route); err != nil {
+		if i, is_there := find(haproxyConfig.Spec.Data.Frontends, req.Name); is_there {
+			haproxyConfig.Spec.Data.Frontends = remove(haproxyConfig.Spec.Data.Frontends, i)
+			log.Info("deleted route")
+		} else {
+
+			log.Error(err, "unable to fetch route. cleanup!")
+			return ctrl.Result{}, client.IgnoreNotFound(err)
+		}
+	} else {
+
+		frontend := ho.HaproxyConfigFrontend{
+			Name:    route.Name,
+			Backend: route.Name,
+			Host:    route.Spec.Host,
+		}
+
+		if i, is_there := find(haproxyConfig.Spec.Data.Frontends, frontend.Name); is_there {
+			log.Info("patching existing frontend", "frontend", frontend.Name)
+			haproxyConfig.Spec.Data.Frontends[i] = frontend
+		} else {
+			log.Info("adding new frontend", "frontend", frontend.Name)
+			haproxyConfig.Spec.Data.Frontends = append(haproxyConfig.Spec.Data.Frontends, frontend)
+		}
+	}
+
+	if err := r.Update(ctx, &haproxyConfig); err != nil {
+		return ctrl.Result{}, fmt.Errorf("could not write ReplicaSet: %+v", err)
+	}
+
+	log.Info("get haproxyconfig", "version", haproxyConfig.Spec.Version)
 
 	log.Info("reconciled route")
 	return ctrl.Result{}, nil
@@ -54,6 +89,20 @@ func (r *RouteReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 // SetupWithManager sets up the controller with the Manager.
 func (r *RouteReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
-		For(&haproxyopeartorv1alpha1.Route{}).
+		For(&ho.Route{}).
 		Complete(r)
+}
+
+func find(f []ho.HaproxyConfigFrontend, val string) (int, bool) {
+	for i, frontend := range f {
+		if frontend.Name == val {
+			return i, true
+		}
+	}
+	return -1, false
+}
+
+func remove(f []ho.HaproxyConfigFrontend, i int) []ho.HaproxyConfigFrontend {
+	copy(f[i:], f[i+1:])
+	return f[:len(f)-1]
 }
