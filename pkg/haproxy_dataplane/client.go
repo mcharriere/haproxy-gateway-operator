@@ -7,8 +7,9 @@ import (
 )
 
 type Client struct {
-	Host   string
-	Client *http.Client
+	Host        string
+	Client      *http.Client
+	Transaction Transaction
 }
 
 func New(host string) *Client {
