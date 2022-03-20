@@ -20,37 +20,32 @@ type Acl struct {
 	Frontend  string `json:"-"`
 }
 
-func (c *Client) AclCreate(acl Acl) (*Acl, error) {
+func (c *Client) AclCreate(acl Acl) error {
 	url := fmt.Sprintf(
 		URL_ACL_ADD,
 		c.Host,
 		c.Transaction.Id,
 		acl.Frontend,
 	)
+	acl.Index = 0
 
 	j, err := json.Marshal(acl)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(j))
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	req.Header.Set("Content-Type", "application/json; charset=UTF-8")
-	ret, err := c.send(req)
+	_, err = c.send(req)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	var data Acl
-	err = json.Unmarshal(ret, &data)
-	if err != nil {
-		return nil, err
-	}
-
-	return &data, nil
+	return nil
 }
 
 func (c *Client) AclGetList(frontend string) ([]Acl, error) {
@@ -79,7 +74,7 @@ func (c *Client) AclGetList(frontend string) ([]Acl, error) {
 	return data.Data, nil
 }
 
-func (c *Client) AclUpdate(acl Acl) (*Acl, error) {
+func (c *Client) AclUpdate(acl Acl) error {
 	url := fmt.Sprintf(
 		URL_ACL_REPLACE,
 		c.Host,
@@ -90,27 +85,21 @@ func (c *Client) AclUpdate(acl Acl) (*Acl, error) {
 
 	j, err := json.Marshal(acl)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	req, err := http.NewRequest("PUT", url, bytes.NewBuffer(j))
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	req.Header.Set("Content-Type", "application/json; charset=UTF-8")
-	ret, err := c.send(req)
+	_, err = c.send(req)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	var data Acl
-	err = json.Unmarshal(ret, &data)
-	if err != nil {
-		return nil, err
-	}
-
-	return &data, nil
+	return nil
 }
 
 func (c *Client) AclCreateOrUpdate(acl Acl) error {
@@ -123,7 +112,7 @@ func (c *Client) AclCreateOrUpdate(acl Acl) error {
 	for _, elem := range acls {
 		if elem.Name == acl.Name {
 			acl.Index = elem.Index
-			_, err = c.AclUpdate(acl)
+			err = c.AclUpdate(acl)
 			if err != nil {
 				return err
 			}
@@ -131,8 +120,7 @@ func (c *Client) AclCreateOrUpdate(acl Acl) error {
 		}
 	}
 
-	acl.Index = 0
-	_, err = c.AclCreate(acl)
+	err = c.AclCreate(acl)
 	if err != nil {
 		return err
 	}

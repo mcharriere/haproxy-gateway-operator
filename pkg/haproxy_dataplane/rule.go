@@ -27,6 +27,7 @@ func (c *Client) RuleCreate(rule Rule) error {
 		c.Transaction.Id,
 		rule.Frontend,
 	)
+	rule.Index = 0
 
 	j, err := json.Marshal(rule)
 	if err != nil {
@@ -119,7 +120,6 @@ func (c *Client) RuleCreateOrUpdate(rule Rule) error {
 		}
 	}
 
-	rule.Index = 0
 	err = c.RuleCreate(rule)
 	if err != nil {
 		return err

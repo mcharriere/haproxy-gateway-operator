@@ -13,7 +13,7 @@ kind: Route
 metadata:
   name: route-sample-2
 spec:
-  host: btest.alt
+  host: comomomo.alt
   backend: another-backend
 
 ---

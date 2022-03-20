@@ -35,7 +35,7 @@ func TestAclCreate(t *testing.T) {
 		t.Errorf("Received %v", err)
 	}
 
-	_, err = cli.AclCreate(acl)
+	err = cli.AclCreate(acl)
 	if err != nil {
 		t.Errorf("Received %v", err)
 	}
