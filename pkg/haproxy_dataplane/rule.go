@@ -103,7 +103,6 @@ func (c *Client) RuleUpdate(rule Rule) error {
 }
 
 func (c *Client) RuleCreateOrUpdate(rule Rule) error {
-	var rules []Rule
 	rules, err := c.RuleGetList(rule.Frontend)
 	if err != nil {
 		return err
@@ -124,5 +123,43 @@ func (c *Client) RuleCreateOrUpdate(rule Rule) error {
 	if err != nil {
 		return err
 	}
+	return nil
+}
+
+func (c *Client) RuleDelete(rule Rule) error {
+	rules, err := c.RuleGetList(rule.Frontend)
+	if err != nil {
+		return err
+	}
+
+	fmt.Printf("%+v", rule)
+	for _, elem := range rules {
+		if elem.Acl == rule.Acl {
+			rule.Index = elem.Index
+
+			url := fmt.Sprintf(
+				URL_RULE_DELETE,
+				c.Host,
+				rule.Index,
+				c.Transaction.Id,
+				rule.Frontend,
+			)
+
+			req, err := http.NewRequest("DELETE", url, nil)
+			if err != nil {
+				return err
+			}
+
+			_, err = c.send(req)
+			if err != nil {
+				return err
+			}
+
+			fmt.Println("deleted rule")
+			break
+		}
+	}
+
+	fmt.Println("rule by")
 	return nil
 }

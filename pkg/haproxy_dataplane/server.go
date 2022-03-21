@@ -100,7 +100,6 @@ func (c *Client) ServerUpdate(server Server) error {
 }
 
 func (c *Client) ServerCreateOrUpdate(server Server) error {
-	var servers []Server
 	servers, err := c.ServerGetList(server.Backend)
 	if err != nil {
 		return err
@@ -120,5 +119,38 @@ func (c *Client) ServerCreateOrUpdate(server Server) error {
 	if err != nil {
 		return err
 	}
+	return nil
+}
+
+func (c *Client) ServerDelete(server Server) error {
+	servers, err := c.ServerGetList(server.Backend)
+	if err != nil {
+		return err
+	}
+
+	for _, elem := range servers {
+		if elem.Name == server.Name {
+			url := fmt.Sprintf(
+				URL_SERVER_DELETE,
+				c.Host,
+				server.Name,
+				c.Transaction.Id,
+				server.Backend,
+			)
+
+			req, err := http.NewRequest("DELETE", url, nil)
+			if err != nil {
+				return err
+			}
+
+			_, err = c.send(req)
+			if err != nil {
+				return fmt.Errorf("server %s: %+v", server.Name, err)
+			}
+
+			break
+		}
+	}
+
 	return nil
 }

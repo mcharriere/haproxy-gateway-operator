@@ -103,7 +103,6 @@ func (c *Client) AclUpdate(acl Acl) error {
 }
 
 func (c *Client) AclCreateOrUpdate(acl Acl) error {
-	var acls []Acl
 	acls, err := c.AclGetList(acl.Frontend)
 	if err != nil {
 		return err
@@ -124,5 +123,40 @@ func (c *Client) AclCreateOrUpdate(acl Acl) error {
 	if err != nil {
 		return err
 	}
+	return nil
+}
+
+func (c *Client) AclDelete(acl Acl) error {
+	acls, err := c.AclGetList(acl.Frontend)
+	if err != nil {
+		return err
+	}
+
+	for _, elem := range acls {
+		if elem.Name == acl.Name {
+			acl.Index = elem.Index
+
+			url := fmt.Sprintf(
+				URL_ACL_DELETE,
+				c.Host,
+				acl.Index,
+				c.Transaction.Id,
+				acl.Frontend,
+			)
+
+			req, err := http.NewRequest("DELETE", url, nil)
+			if err != nil {
+				return err
+			}
+
+			_, err = c.send(req)
+			if err != nil {
+				return err
+			}
+
+			break
+		}
+	}
+
 	return nil
 }

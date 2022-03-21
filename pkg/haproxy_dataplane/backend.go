@@ -95,7 +95,6 @@ func (c *Client) BackendUpdate(backend Backend) error {
 }
 
 func (c *Client) BackendCreateOrUpdate(backend Backend) error {
-	var backends []Backend
 	backends, err := c.BackendGetList()
 	if err != nil {
 		return err
@@ -115,5 +114,37 @@ func (c *Client) BackendCreateOrUpdate(backend Backend) error {
 	if err != nil {
 		return err
 	}
+	return nil
+}
+
+func (c *Client) BackendDelete(backend Backend) error {
+	backends, err := c.BackendGetList()
+	if err != nil {
+		return err
+	}
+
+	for _, elem := range backends {
+		if elem.Name == backend.Name {
+			url := fmt.Sprintf(
+				URL_BACKEND_DELETE,
+				c.Host,
+				backend.Name,
+				c.Transaction.Id,
+			)
+
+			req, err := http.NewRequest("DELETE", url, nil)
+			if err != nil {
+				return err
+			}
+
+			_, err = c.send(req)
+			if err != nil {
+				return err
+			}
+
+			break
+		}
+	}
+
 	return nil
 }
