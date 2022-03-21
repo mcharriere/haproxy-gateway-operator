@@ -1,0 +1,10 @@
+apiVersion: haproxy-opeartor.my.domain/v1alpha1
+kind: Route
+metadata:
+  name: podinfo
+spec:
+  host: test-domain.com
+  backend: 
+    service: podinfo
+    port: 9898
+
