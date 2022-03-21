@@ -3,25 +3,27 @@ kind: Route
 metadata:
   name: route-sample
 spec:
-  host: ztest.com
-  backend: some-backend
+  host: pepe.com
+  backend: 
+    service: some-backend
+    port: 8080
 
 ---
 
-apiVersion: haproxy-opeartor.my.domain/v1alpha1
-kind: Route
-metadata:
-  name: route-sample-2
-spec:
-  host: comomomo.alt
-  backend: another-backend
-
----
-
-apiVersion: haproxy-opeartor.my.domain/v1alpha1
-kind: Route
-metadata:
-  name: route-sample-1
-spec:
-  host: testing.com
-  backend: another-backend
+# apiVersion: haproxy-opeartor.my.domain/v1alpha1
+# kind: Route
+# metadata:
+#   name: route-sample-2
+# spec:
+#   host: comomomo.alt
+#   backend: another-backend
+#
+# ---
+#
+# apiVersion: haproxy-opeartor.my.domain/v1alpha1
+# kind: Route
+# metadata:
+#   name: route-sample-1
+# spec:
+#   host: testing.com
+#   backend: another-backend

@@ -4,7 +4,6 @@ metadata:
   labels:
     app: haproxy-operator
   name: haproxy-operator
-  namespace: kube-system
 spec:
   selector:
     matchLabels:
@@ -14,6 +13,15 @@ spec:
       labels:
         app: haproxy-operator
     spec:
+      initContainers:
+      - name: init-config
+        image: busybox:1.28
+        command: ['sh', '-c', "cp /default-config/haproxy.cfg /config"]
+        volumeMounts:
+        - name: config
+          mountPath: "/config"
+        - name: default-config
+          mountPath: "/default-config"
       containers:
       - name: haproxy-operator
         image: haproxytech/haproxy-alpine:2.5
@@ -31,3 +39,48 @@ spec:
         - name: stats
           containerPort: 9500
           hostPort: 9500
+        volumeMounts:
+        - name: config
+          mountPath: "/usr/local/etc/haproxy"
+      volumes:
+        # You set volumes at the Pod level, then mount them into containers inside that Pod
+        - name: config
+          emptyDir: {}
+        - name: default-config
+          configMap:
+            # Provide the name of the ConfigMap you want to mount.
+            name: haproxy-operator-defaultconfig
+
+---
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: haproxy-operator-defaultconfig
+data:
+  # property-like keys; each key maps to a simple value
+  haproxy.cfg: |
+    global
+      daemon
+      maxconn 50000
+
+    defaults
+      mode http
+      timeout connect 50s
+      timeout client 900s
+      timeout server 900s
+
+    userlist dataplaneapi
+      user admin insecure-password securePassword
+
+    frontend http
+      bind *:80
+
+    backend default
+      balance roundrobin
+      # option httpchk GET /v1/sys/health
+      server black_page blank.org:443 maxconn 5000 weight 1
+
+    program api
+      command /usr/bin/dataplaneapi --host 0.0.0.0 --port 5555 --haproxy-bin /usr/sbin/haproxy --config-file /usr/local/etc/haproxy/haproxy.cfg --reload-cmd "kill -SIGUSR2 1" --reload-delay 5 --userlist dataplaneapi
+      no option start-on-reload
