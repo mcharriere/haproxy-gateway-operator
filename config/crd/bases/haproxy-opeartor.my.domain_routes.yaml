@@ -40,7 +40,12 @@ spec:
             description: RouteSpec defines the desired state of Route
             properties:
               backend:
-                type: string
+                properties:
+                  port:
+                    type: integer
+                  service:
+                    type: string
+                type: object
               host:
                 type: string
             type: object

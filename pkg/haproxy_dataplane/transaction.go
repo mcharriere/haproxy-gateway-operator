@@ -46,15 +46,8 @@ func (c *Client) CommitTransaction() error {
 	if err != nil {
 		return err
 	}
-	req.Header.Set("Content-Type", "application/json; charset=UTF-8")
 
 	ret, err := c.send(req)
-	if err != nil {
-		return err
-	}
-
-	var data Transaction
-	err = json.Unmarshal(ret, &data)
 	if err != nil {
 		return err
 	}
@@ -62,6 +55,20 @@ func (c *Client) CommitTransaction() error {
 	return nil
 }
 
+func (c *Client) DeleteTransaction() error {
+	url := fmt.Sprintf(URL_TRANSACTION_DELETE, c.Host, c.Transaction.Id)
+	req, err := http.NewRequest("DELETE", url, nil)
+	if err != nil {
+		return err
+	}
+
+	ret, err := c.send(req)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
 func (c *Client) GetVersion() (*int, error) {
 	url := fmt.Sprintf(URL_VERSION_GET, c.Host)
 	req, err := http.NewRequest("GET", url, nil)

@@ -22,8 +22,13 @@ import (
 
 // RouteSpec defines the desired state of Route
 type RouteSpec struct {
-	Host    string `json:"host,omitempty"`
-	Backend string `json:"backend,omitempty"`
+	Host    string           `json:"host,omitempty"`
+	Backend RouteSpecBackend `json:"backend,omitempty"`
+}
+
+type RouteSpecBackend struct {
+	Service string `json:"service,omitempty"`
+	Port    int    `json:"port,omitempty"`
 }
 
 // RouteStatus defines the observed state of Route

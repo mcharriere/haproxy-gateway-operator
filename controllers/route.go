@@ -23,8 +23,8 @@ import (
 	hocli "github.com/mcharriere/giantswarm-task/pkg/haproxy_dataplane"
 )
 
-func RouteCreateOrUpdate(route ho.Route) error {
-	cli := hocli.New("http://172.17.0.2:5555")
+func RouteCreateOrUpdate(url string, route ho.Route) error {
+	cli := hocli.New(url)
 
 	acl := hocli.Acl{
 		Name:      route.Name,
@@ -47,7 +47,8 @@ func RouteCreateOrUpdate(route ho.Route) error {
 	server := hocli.Server{
 		Backend: backend.Name,
 		Name:    "service",
-		Address: "10.0.0.1:8080",
+		Address: fmt.Sprintf("%s:%s", route.Spec.Backend.Service, route.Spec.Backend.Port),
+		//Address: "10.0.0.1:8080",
 	}
 
 	err := cli.StartTransaction()
@@ -57,21 +58,25 @@ func RouteCreateOrUpdate(route ho.Route) error {
 
 	err = cli.AclCreateOrUpdate(acl)
 	if err != nil {
+		cli.DeleteTransaction()
 		return err
 	}
 
 	err = cli.RuleCreateOrUpdate(rule)
 	if err != nil {
+		cli.DeleteTransaction()
 		return err
 	}
 
 	err = cli.BackendCreateOrUpdate(backend)
 	if err != nil {
+		cli.DeleteTransaction()
 		return err
 	}
 
 	err = cli.ServerCreateOrUpdate(server)
 	if err != nil {
+		cli.DeleteTransaction()
 		return err
 	}
 
@@ -83,8 +88,8 @@ func RouteCreateOrUpdate(route ho.Route) error {
 	return nil
 }
 
-func RouteDelete(route string) error {
-	cli := hocli.New("http://172.17.0.2:5555")
+func RouteDelete(url string, route string) error {
+	cli := hocli.New(url)
 
 	acl := hocli.Acl{
 		Name:     route,
@@ -113,21 +118,25 @@ func RouteDelete(route string) error {
 
 	err = cli.RuleDelete(rule)
 	if err != nil {
+		cli.DeleteTransaction()
 		return err
 	}
 
 	err = cli.AclDelete(acl)
 	if err != nil {
+		cli.DeleteTransaction()
 		return err
 	}
 
 	err = cli.ServerDelete(server)
 	if err != nil {
+		cli.DeleteTransaction()
 		return err
 	}
 
 	err = cli.BackendDelete(backend)
 	if err != nil {
+		cli.DeleteTransaction()
 		return err
 	}
 

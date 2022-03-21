@@ -54,12 +54,13 @@ func (r *RouteReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 		if err := RouteDelete(req.Name); err != nil {
 			return ctrl.Result{}, fmt.Errorf("could not delete route: %+v", err)
 		}
-	} else {
-		log.Info("adding new route", "route", req.NamespacedName)
+		log.Info("deleted route", "route", req.NamespacedName)
+		return ctrl.Result{}, nil
+	}
 
-		if err := RouteCreateOrUpdate(route); err != nil {
-			return ctrl.Result{}, fmt.Errorf("could not create route: %+v", err)
-		}
+	log.Info("adding new route", "route", req.NamespacedName)
+	if err := RouteCreateOrUpdate(route); err != nil {
+		return ctrl.Result{}, fmt.Errorf("could not create route: %+v", err)
 	}
 
 	log.Info("reconciled route")
