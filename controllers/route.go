@@ -21,10 +21,10 @@ import (
 
 	ho "github.com/mcharriere/giantswarm-task/api/v1alpha1"
 	hocli "github.com/mcharriere/giantswarm-task/pkg/haproxy_dataplane"
+	corev1 "k8s.io/api/core/v1"
 )
 
-func RouteCreateOrUpdate(url string, route ho.Route) error {
-	cli := hocli.New(url)
+func RouteCreateOrUpdate(instances corev1.PodList, route ho.Route) error {
 
 	acl := hocli.Acl{
 		Name:      route.Name,
@@ -47,49 +47,52 @@ func RouteCreateOrUpdate(url string, route ho.Route) error {
 	server := hocli.Server{
 		Backend: backend.Name,
 		Name:    "service",
-		Address: fmt.Sprintf("%s:%s", route.Spec.Backend.Service, route.Spec.Backend.Port),
-		//Address: "10.0.0.1:8080",
+		Address: fmt.Sprintf("%s:%d", route.Spec.Backend.Service, route.Spec.Backend.Port),
 	}
 
-	err := cli.StartTransaction()
-	if err != nil {
-		return err
-	}
+	for _, instance := range instances.Items {
+		url := fmt.Sprintf("http://%s:5555", instance.Status.PodIP)
+		cli := hocli.New(url)
 
-	err = cli.AclCreateOrUpdate(acl)
-	if err != nil {
-		cli.DeleteTransaction()
-		return err
-	}
+		err := cli.StartTransaction()
+		if err != nil {
+			return err
+		}
 
-	err = cli.RuleCreateOrUpdate(rule)
-	if err != nil {
-		cli.DeleteTransaction()
-		return err
-	}
+		err = cli.AclCreateOrUpdate(acl)
+		if err != nil {
+			cli.DeleteTransaction()
+			return err
+		}
 
-	err = cli.BackendCreateOrUpdate(backend)
-	if err != nil {
-		cli.DeleteTransaction()
-		return err
-	}
+		err = cli.RuleCreateOrUpdate(rule)
+		if err != nil {
+			cli.DeleteTransaction()
+			return err
+		}
 
-	err = cli.ServerCreateOrUpdate(server)
-	if err != nil {
-		cli.DeleteTransaction()
-		return err
-	}
+		err = cli.BackendCreateOrUpdate(backend)
+		if err != nil {
+			cli.DeleteTransaction()
+			return err
+		}
 
-	err = cli.CommitTransaction()
-	if err != nil {
-		return err
+		err = cli.ServerCreateOrUpdate(server)
+		if err != nil {
+			cli.DeleteTransaction()
+			return err
+		}
+
+		err = cli.CommitTransaction()
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil
 }
 
-func RouteDelete(url string, route string) error {
-	cli := hocli.New(url)
+func RouteDelete(instances corev1.PodList, route string) error {
 
 	acl := hocli.Acl{
 		Name:     route,
@@ -111,38 +114,44 @@ func RouteDelete(url string, route string) error {
 		Name:    "service",
 	}
 
-	err := cli.StartTransaction()
-	if err != nil {
-		return err
-	}
+	for _, instance := range instances.Items {
+		url := fmt.Sprintf("http://%s:5555", instance.Status.PodIP)
+		cli := hocli.New(url)
 
-	err = cli.RuleDelete(rule)
-	if err != nil {
-		cli.DeleteTransaction()
-		return err
-	}
+		err := cli.StartTransaction()
+		if err != nil {
+			return err
+		}
 
-	err = cli.AclDelete(acl)
-	if err != nil {
-		cli.DeleteTransaction()
-		return err
-	}
+		err = cli.RuleDelete(rule)
+		if err != nil {
+			cli.DeleteTransaction()
+			return err
+		}
 
-	err = cli.ServerDelete(server)
-	if err != nil {
-		cli.DeleteTransaction()
-		return err
-	}
+		err = cli.AclDelete(acl)
+		if err != nil {
+			cli.DeleteTransaction()
+			return err
+		}
 
-	err = cli.BackendDelete(backend)
-	if err != nil {
-		cli.DeleteTransaction()
-		return err
-	}
+		err = cli.ServerDelete(server)
+		if err != nil {
+			cli.DeleteTransaction()
+			return err
+		}
 
-	err = cli.CommitTransaction()
-	if err != nil {
-		return err
+		err = cli.BackendDelete(backend)
+		if err != nil {
+			cli.DeleteTransaction()
+			return err
+		}
+
+		err = cli.CommitTransaction()
+		if err != nil {
+			return err
+		}
+
 	}
 
 	return nil

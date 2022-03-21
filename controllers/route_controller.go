@@ -20,6 +20,7 @@ import (
 	"context"
 	"fmt"
 
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -43,15 +44,14 @@ func (r *RouteReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 
 	log.Info("reconciling route")
 
-	// haproxyConfigName := client.ObjectKey{Name: "haproxyconfig-sample", Namespace: req.Namespace}
-	// var haproxyConfig ho.HaproxyConfig
-	// if err := r.Get(ctx, haproxyConfigName, &haproxyConfig); err != nil {
-	// 	return ctrl.Result{}, client.IgnoreNotFound(err)
-	// }
+	var haproxyInstances corev1.PodList
+	if err := r.List(ctx, &haproxyInstances, client.MatchingLabels{"app": "haproxy-operator"}); err != nil {
+		return ctrl.Result{}, client.IgnoreNotFound(err)
+	}
 
 	var route ho.Route
 	if err := r.Get(ctx, req.NamespacedName, &route); err != nil {
-		if err := RouteDelete(req.Name); err != nil {
+		if err := RouteDelete(haproxyInstances, req.Name); err != nil {
 			return ctrl.Result{}, fmt.Errorf("could not delete route: %+v", err)
 		}
 		log.Info("deleted route", "route", req.NamespacedName)
@@ -59,7 +59,7 @@ func (r *RouteReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 	}
 
 	log.Info("adding new route", "route", req.NamespacedName)
-	if err := RouteCreateOrUpdate(route); err != nil {
+	if err := RouteCreateOrUpdate(haproxyInstances, route); err != nil {
 		return ctrl.Result{}, fmt.Errorf("could not create route: %+v", err)
 	}
 

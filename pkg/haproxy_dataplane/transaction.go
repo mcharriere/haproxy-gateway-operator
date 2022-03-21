@@ -47,7 +47,7 @@ func (c *Client) CommitTransaction() error {
 		return err
 	}
 
-	ret, err := c.send(req)
+	_, err = c.send(req)
 	if err != nil {
 		return err
 	}
@@ -62,7 +62,7 @@ func (c *Client) DeleteTransaction() error {
 		return err
 	}
 
-	ret, err := c.send(req)
+	_, err = c.send(req)
 	if err != nil {
 		return err
 	}
