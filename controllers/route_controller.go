@@ -51,14 +51,9 @@ func (r *RouteReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 
 	var route ho.Route
 	if err := r.Get(ctx, req.NamespacedName, &route); err != nil {
-		// if i, is_there := find(haproxyConfig.Spec.Data.Frontends, req.Name); is_there {
-		// 	haproxyConfig.Spec.Data.Frontends = remove(haproxyConfig.Spec.Data.Frontends, i)
-		// 	log.Info("deleted route")
-		// } else {
-
-		log.Error(err, "unable to fetch route. cleanup!")
-		return ctrl.Result{}, client.IgnoreNotFound(err)
-		// }
+		if err := RouteDelete(req.Name); err != nil {
+			return ctrl.Result{}, fmt.Errorf("could not delete route: %+v", err)
+		}
 	} else {
 		log.Info("adding new route", "route", req.NamespacedName)
 
