@@ -82,3 +82,59 @@ func RouteCreateOrUpdate(route ho.Route) error {
 
 	return nil
 }
+
+func RouteDelete(route string) error {
+	cli := hocli.New("http://172.17.0.2:5555")
+
+	acl := hocli.Acl{
+		Name:     route,
+		Frontend: "http",
+	}
+
+	rule := hocli.Rule{
+		Backend:  route,
+		Acl:      route,
+		Frontend: "http",
+	}
+
+	backend := hocli.Backend{
+		Name: route,
+	}
+
+	server := hocli.Server{
+		Backend: route,
+		Name:    "service",
+	}
+
+	err := cli.StartTransaction()
+	if err != nil {
+		return err
+	}
+
+	err = cli.RuleDelete(rule)
+	if err != nil {
+		return err
+	}
+
+	err = cli.AclDelete(acl)
+	if err != nil {
+		return err
+	}
+
+	err = cli.ServerDelete(server)
+	if err != nil {
+		return err
+	}
+
+	err = cli.BackendDelete(backend)
+	if err != nil {
+		return err
+	}
+
+	err = cli.CommitTransaction()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
