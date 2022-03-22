@@ -4,6 +4,7 @@ metadata:
   labels:
     app: haproxy-operator
   name: haproxy-operator
+  namespace: haproxy-operator-system
 spec:
   selector:
     matchLabels:
@@ -57,6 +58,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: haproxy-operator-defaultconfig
+  namespace: haproxy-operator-system
 data:
   # property-like keys; each key maps to a simple value
   haproxy.cfg: |

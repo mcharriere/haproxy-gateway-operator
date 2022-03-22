@@ -35,6 +35,7 @@ type RouteReconciler struct {
 	Scheme *runtime.Scheme
 }
 
+//+kubebuilder:rbac:groups=*,resources=pods,verbs=get;list;watch
 //+kubebuilder:rbac:groups=haproxy-opeartor.my.domain,resources=routes,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=haproxy-opeartor.my.domain,resources=routes/status,verbs=get;update;patch
 //+kubebuilder:rbac:groups=haproxy-opeartor.my.domain,resources=routes/finalizers,verbs=update
