@@ -26,7 +26,7 @@ func TestRuleCreateOrUpdate(t *testing.T) {
 		Name:      "frontend3",
 		Criterion: "hdr(host)",
 		Index:     0,
-		Value:     "-i cholo.com",
+		Value:     "-i test3.com",
 		Frontend:  "http",
 	}
 

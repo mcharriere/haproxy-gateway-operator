@@ -3,7 +3,7 @@ kind: Route
 metadata:
   name: route-sample
 spec:
-  host: pepe.com
+  host: test0.com
   backend: 
     service: some-backend
     port: 8080
@@ -15,7 +15,7 @@ spec:
 # metadata:
 #   name: route-sample-2
 # spec:
-#   host: comomomo.alt
+#   host: test2.alt
 #   backend: another-backend
 #
 # ---
@@ -25,5 +25,5 @@ spec:
 # metadata:
 #   name: route-sample-1
 # spec:
-#   host: testing.com
+#   host: test1.com
 #   backend: another-backend
