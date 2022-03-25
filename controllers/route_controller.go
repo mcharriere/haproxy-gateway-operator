@@ -46,7 +46,7 @@ func (r *RouteReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 	log.Info("reconciling route")
 
 	var haproxyInstances corev1.PodList
-	if err := r.List(ctx, &haproxyInstances, client.MatchingLabels{"app": "haproxy-operator"}); err != nil {
+	if err := r.List(ctx, &haproxyInstances, client.MatchingLabels{"app": "haproxy-operator-ingress"}); err != nil {
 		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
 

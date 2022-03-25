@@ -132,7 +132,6 @@ func (c *Client) RuleDelete(rule Rule) error {
 		return err
 	}
 
-	fmt.Printf("%+v", rule)
 	for _, elem := range rules {
 		if elem.Acl == rule.Acl {
 			rule.Index = elem.Index
@@ -155,11 +154,9 @@ func (c *Client) RuleDelete(rule Rule) error {
 				return err
 			}
 
-			fmt.Println("deleted rule")
 			break
 		}
 	}
 
-	fmt.Println("rule by")
 	return nil
 }

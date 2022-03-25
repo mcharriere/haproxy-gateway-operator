@@ -2,17 +2,17 @@ apiVersion: apps/v1
 kind: DaemonSet
 metadata:
   labels:
-    app: haproxy-operator
-  name: haproxy-operator
+    app: haproxy-operator-ingress
+  name: haproxy-operator-ingress
   namespace: haproxy-operator-system
 spec:
   selector:
     matchLabels:
-      app: haproxy-operator
+      app: haproxy-operator-ingress
   template:
     metadata:
       labels:
-        app: haproxy-operator
+        app: haproxy-operator-ingress
     spec:
       initContainers:
       - name: init-config
@@ -24,7 +24,7 @@ spec:
         - name: default-config
           mountPath: "/default-config"
       containers:
-      - name: haproxy-operator
+      - name: haproxy
         image: haproxytech/haproxy-alpine:2.5
         resources:
           requests:
