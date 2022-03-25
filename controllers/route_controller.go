@@ -24,6 +24,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	logger "sigs.k8s.io/controller-runtime/pkg/log"
 
 	ho "github.com/mcharriere/giantswarm-task/api/v1alpha1"
@@ -52,10 +53,29 @@ func (r *RouteReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 
 	var route ho.Route
 	if err := r.Get(ctx, req.NamespacedName, &route); err != nil {
-		if err := RouteDelete(haproxyInstances, req.Name); err != nil {
-			return ctrl.Result{}, fmt.Errorf("could not delete route: %+v", err)
+		return ctrl.Result{}, client.IgnoreNotFound(err)
+	}
+
+	finalizerName := "haproxy-opeartor.my.domain/finalizer"
+	if route.ObjectMeta.DeletionTimestamp.IsZero() {
+		if !controllerutil.ContainsFinalizer(&route, finalizerName) {
+			controllerutil.AddFinalizer(&route, finalizerName)
+			if err := r.Update(ctx, &route); err != nil {
+				return ctrl.Result{}, err
+			}
 		}
-		log.Info("deleted route", "route", req.NamespacedName)
+	} else {
+		if controllerutil.ContainsFinalizer(&route, finalizerName) {
+			if err := RouteDelete(haproxyInstances, req.Name); err != nil {
+				return ctrl.Result{}, fmt.Errorf("could not delete route: %+v", err)
+			}
+
+			log.Info("deleted route", "route", req.NamespacedName)
+			controllerutil.RemoveFinalizer(&route, finalizerName)
+			if err := r.Update(ctx, &route); err != nil {
+				return ctrl.Result{}, err
+			}
+		}
 		return ctrl.Result{}, nil
 	}
 
